@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>Friends Survey</title>
+
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/css/bootstrap.min.css" integrity="sha384-9gVQ4dYFwwWSjIDZnLEWnxCjeSWFphJiwGPXr1jddIhOegiu1FwO5qRGvFXOdJZ4" crossorigin="anonymous">
+</head>
+<body>
+    <h3>Survey Time!</h3>
+
+    <form>
+        <div class="form-group">
+          <label for="name">Name</label>
+          <input type="input" class="form-control" id="name">
+        </div>
+        <div class="form-group">
+          <label for="photo">Link to Personal Photo</label>
+          <input type="input" class="form-control" id="photo">
+        </div>
+        <br>
+        <br>        
+        <div class="form-group card-body">
+            <h4>Question #1: </h4>
+            <h5><label>Game of Thrones is the best show of all time.</label></h5>
+            <select class="custom-select" id="questionOne">
+                <option selected>Select an option</option>
+                <option value="1">1 - Strongly Disagree</option>
+                <option value="2">2 - Disagree</option>
+                <option value="3">3 - No Opinion</option>
+                <option value="4">4 - Agree</option>
+                <option value="5">5 - Strongly Agree</option>
+            </select>
+        </div>
+        <div class="form-group card-body">
+            <h4>Question #2: </h4>
+            <h5><label>Physical activity is important for your body and mind.)</label></h5>
+            <select class="custom-select" id="questionTwo">
+                <option selected>Select an option</option>
+                <option value="1">1 - Strongly Disagree</option>
+                <option value="2">2 - Disagree</option>
+                <option value="3">3 - No Opinion</option>
+                <option value="4">4 - Agree</option>
+                <option value="5">5 - Strongly Agree</option>
+            </select>
+        </div>
+        <div class="form-group card-body">
+            <h4>Question #3: </h4>
+            <h5><label>Beauty is in the eyes of the beholder.</label></h5>
+            <select class="custom-select" id="questionThree">
+                <option selected>Select an option</option>
+                <option value="1">1 - Strongly Disagree</option>
+                <option value="2">2 - Disagree</option>
+                <option value="3">3 - No Opinion</option>
+                <option value="4">4 - Agree</option>
+                <option value="5">5 - Strongly Agree</option>
+            </select>
+        </div>
+        <div class="form-group card-body">
+            <h4>Question #4: </h4>
+            <h5><label>Our natural world should be protected and preserved for future generations to enjoy.</label></h5>
+            <select class="custom-select" id="questionFour">
+                <option selected>Select an option</option>
+                <option value="1">1 - Strongly Disagree</option>
+                <option value="2">2 - Disagree</option>
+                <option value="3">3 - No Opinion</option>
+                <option value="4">4 - Agree</option>
+                <option value="5">5 - Strongly Agree</option>
+            </select>
+        </div>
+        <div class="form-group card-body">
+            <h4>Question #5: </h4>
+            <h5><label>Dogs are better than cats.</label></h5>
+            <select class="custom-select" id="questionFive">
+                <option selected>Select an option</option>
+                <option value="1">1 - Strongly Disagree</option>
+                <option value="2">2 - Disagree</option>
+                <option value="3">3 - No Opinion</option>
+                <option value="4">4 - Agree</option>
+                <option value="5">5 - Strongly Agree</option>
+            </select>
+        </div>
+        <div class="card-body">
+            <button type="submit" class="btn btn-primary btn-lg">Submit</button>
+        </div>
+    </form>
+    <br>
+    <br>
+    <div id="match"></div>
+
+<script src="https://code.jquery.com/jquery.js"></script>
+<script type= "text/javascript">
+    $(".btn").on("click", function(event){
+    event.preventDefault();
+
+    var newFriend = {
+        "name": $("#name").val().trim(),
+        "photo": $("#photo").val().trim(),
+        "answers": [$("#questionOne").val().trim(), $("#questionTwo").val().trim(), $("#questionThree").val().trim(), $("#questionFour").val().trim(), $("#questionFive").val().trim()]
+    }
+
+    work(newFriend);
+
+    $.post("api/friends", newFriend).then( function(data){
+        console.log("New respose posted")
+    });
+    
+    $("#name").val("");
+    $("#photo").val("");
+    $("#questionOne").val("");
+    $("#questionTwo").val("");
+    $("#questionThree").val("");
+    $("#questionFour").val("");
+    $("#questionFive").val("");
+    });
+
+
+    function work(newFriend){
+        var newAnswers = newFriend.answers;
+        var currentURL = window.location.origin;
+        //get the differences from all responses in the api, then find teh lowest score, get the index of lowest score. Loook at the api array of objects for the index to get the best match and grab that name
+
+        $.ajax({
+            url: currentURL + "/api/friends",
+            method: "GET"
+        }).then(function(responses){
+            console.log(responses);
+            var scores = [];
+
+            for(var i = 0; i < responses.length; i++){
+                var answers = responses[i].answers;
+                var difference = 0
+                
+                for(var x = 0; x < 5; x++){
+                    difference += Math.abs(newAnswers[x] - answers[x]);
+                }
+
+                scores.push(difference);
+            }
+            var indexMatch = scores.indexOf(Math.min(...scores));
+            console.log(responses[indexMatch].name);
+            $("#match").append("<h2>Your Best Match: " + responses[indexMatch].name + "!!!</h2>");
+            alert("Your best match is " + responses[indexMatch].name);
+        });
+
+    }
+</script>
+</body>
+</html>
